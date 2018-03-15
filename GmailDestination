@@ -1,0 +1,6 @@
+mail.user=hello.sap.csr@gmail.com
+mail.password=HelloSapCsr
+mail.transport.protocol=smtp
+mail.smtp.host=smtp.gmail.com
+mail.smtp.auth=true
+mail.smtp.port=465
