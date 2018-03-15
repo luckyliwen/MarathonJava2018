@@ -311,7 +311,7 @@ public class CSRProcessor implements ServiceConstant {
 		sb.append(result);
 
 		//then by department, no matter the status
-		sb.append(", {\"RegDepartment\":");
+		sb.append(", \"RegDepartment\":");
 		regQueryStr = "select r.department, count(r) from Registration r group by r.department";
 		query = em.createQuery(regQueryStr);
 		
@@ -319,7 +319,7 @@ public class CSRProcessor implements ServiceConstant {
 		result = formatResultAsArray(query.getResultList(), departmentName, regFlag);
 		sb.append(result);
 		
-		sb.append("}}");
+		sb.append("}");
 		em.close();
 		return sb.toString();
 	}
