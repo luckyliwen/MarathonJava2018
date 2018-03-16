@@ -50,7 +50,7 @@ import com.sap.csr.odata.Util;
 
 public class Registration extends BaseModel  implements ServiceConstant{
 
-	private static long serialVersionUID = 1L;
+//	private static long serialVersionUID = 1L;
 
 	//private long projectId;
 	
@@ -87,7 +87,7 @@ public class Registration extends BaseModel  implements ServiceConstant{
 	private String fullBestTime, halfBestTime, funBestTime;
 	
 	private String updateFlag;  //used to check what really changed, mainly for update group
-	private long   teamId;   // 0 means not assigned group
+	
 	
 	@Temporal(TemporalType.TIMESTAMP)
     private Date submittedTime;
@@ -376,77 +376,8 @@ public class Registration extends BaseModel  implements ServiceConstant{
 //	}
 
 	
-	private boolean checkCanJoinTeam(long teamId2) {
-		//0 means exit one team
-		if (teamId2 ==0)
-			return true;
-		
-		getEntityManager();
-		
-		String regQueryStr = "select count(r) from Registration r where r.teamId = :teamId and r.status != \"Canceled\"";
-		Query query = em.createQuery(regQueryStr);
-		query.setParameter("teamId", teamId2);
-		Object result = query.getSingleResult();
-		if (result instanceof Long) {
-			long count = ((Long) result).longValue();
-			if (count >= MAX_TEAM_MEMBERS)
-				return false;
-			else 
-				return true;
-		} else {
-			return false;
-		}
-	}
 	
-	@PrePersist 
-	public void setTeamIdSmart() {
-		modifiedTime = new Date();
-		
-		setSubmitTime();
-		
-		//when create new Registration, it need check whether the user have create a team or not, if so then set the team id 
-		if ( updateFlag != null) {
-			
-			if (updateFlag.equals("new")) {
-				getEntityManager();
-				
-				if (teamId == 0) {
-					//0,  need set smartly
-					String queryStr = "select t.teamId from Team t where t.ownerId = :ownerId";
-					Query query = em.createQuery(queryStr);
-					query.setParameter("ownerId", userId);
-					try {
-						Object result = query.getSingleResult();
-						teamId = (Long)result;
-					} catch (Exception e) {
-						
-					}
-				} else {
-					//not 0, means user press the 'Request to join'
-					if (! checkCanJoinTeam( teamId) ) {
-						//??here check the team 
-						throw new Error("Can't join team because it exceeds maximum numbers");
-					}
-				}
-			} 
-		}
-		
-		//also check whether it is vip or not
-		getEntityManager();
-		Query namedQuery = em.createNamedQuery(PROJECT_BY_MARATHON);
-		try {
-			Project project = (Project)namedQuery.getSingleResult();
-			if ( project != null) {
-				String vips = project.getVipIds();
-				int pos =  vips.indexOf(userId);
-				vip =  pos == -1 ? false : true;
-			} else {
-				vip = false;
-			}
-		} catch ( Exception e){
-			//even no project, it will still work
-		}
-	}
+	
 	
 	synchronized boolean hasEnoughSeat() {
 		getEntityManager();
@@ -484,14 +415,8 @@ public class Registration extends BaseModel  implements ServiceConstant{
 		if ( updateFlag == null) {
 			return;
 		}
-			//rj:  request to join
-		if (updateFlag.equals("rj")) {
-				
-				if (! checkCanJoinTeam( teamId) ) {
-					//??here check the team 
-					throw new Error("[[#Can't join team because it exceeds maximum numbers#]]");
-				}
-		} else if ( updateFlag.equals("approve")) {
+		
+		if ( updateFlag.equals("approve")) {
 		
 		
 			//only for the 
@@ -755,19 +680,7 @@ public class Registration extends BaseModel  implements ServiceConstant{
 		this.department = department;
 	}
 
-	/**
-	 * @return the teamId
-	 */
-	public final long getTeamId() {
-		return teamId;
-	}
-
-	/**
-	 * @param teamId the teamId to set
-	 */
-	public final void setTeamId(long teamId) {
-		this.teamId = teamId;
-	}
+	
 
 	/**
 	 * @return the fullBestTime

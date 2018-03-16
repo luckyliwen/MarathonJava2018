@@ -64,7 +64,7 @@ public interface ServiceConstant {
 	//some static number
 	public static final int  MAX_TEAM_MEMBERS = 0;
 	
-	public static final String DETAIL_REFER = "\r\n\r\n\tFor more information, please visit: https://flpportal-p2000218960trial.dispatcher.hanatrial.ondemand.com/sites?siteId=1ab27b70-4e91-4150-9b06-4c59a1c365a7\r\n\r\n"
+	public static final String DETAIL_REFER = "\r\n\r\n\tFor more information, please visit: https://flpnwc-f57f4b412.dispatcher.cn1.hana.ondemand.com/sites?siteId=290d1ba1-af08-43ad-a7b7-b8bd5a05cec6#Shell-home\r\n\r\n"
 			+ "Best Regards!\r\nTEAM SAP Committee";
 
 	public static final String DONATOR_SAP="SAP";
