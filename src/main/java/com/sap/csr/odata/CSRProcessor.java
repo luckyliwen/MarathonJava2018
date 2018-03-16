@@ -442,9 +442,10 @@ public class CSRProcessor implements ServiceConstant {
 	public boolean TestEmail(@EdmFunctionImportParameter(name = "To") String to, 
 			@EdmFunctionImportParameter(name = "Subject") String subject,
 			@EdmFunctionImportParameter(name = "Body") String body) throws ODataException{
-		EmailMng email = new EmailMng();
+		EmailContent email = new EmailContent(to, subject, body);
 		try {
-			return email.sendEmail(to, subject, body);
+			EmailSendService.sendEmail(email);
+			return true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

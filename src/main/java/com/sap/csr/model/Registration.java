@@ -35,7 +35,9 @@ import javax.persistence.Table;
 import org.eclipse.persistence.annotations.Multitenant;
 import org.eclipse.persistence.annotations.TenantDiscriminatorColumn;
 
+import com.sap.csr.odata.EmailContentMng;
 import com.sap.csr.odata.EmailMng;
+import com.sap.csr.odata.EmailSendService;
 import com.sap.csr.odata.JpaEntityManagerFactory;
 import com.sap.csr.odata.ServiceConstant;
 import com.sap.csr.odata.Util;
@@ -167,6 +169,10 @@ public class Registration extends BaseModel  implements ServiceConstant{
 		this.lastName = lastName;
 	}
 
+	public final String getFullName() {
+		return firstName + " " + lastName;
+	}
+	
 //	/**
 //	 * @return the gender
 //	 */
@@ -432,23 +438,14 @@ public class Registration extends BaseModel  implements ServiceConstant{
 						throw new Error("[[#Can't approved because it exceeds maximum allowed numbers#]]");
 					}
 				}
-				
-				subject += "approved!";
-				fmt.format(MSG_APPROVED_BODY, getName());
-				body = fmt.toString();
-			} else if ( status.equals("Rejected")) {
-				subject += "Rejected!";
-				fmt.format(MSG_REJECTED_BODY, getName(), rejectReason);
-				body = fmt.toString();
-			} else {
+			
+			} else if ( !status.equals("Rejected")) {
 				return ;
 			}
 			
-			body = body + DETAIL_REFER;
 			
-			EmailMng em = new EmailMng();
 			try {
-				em.sendEmail( email, subject, body);
+				EmailSendService.sendEmail( EmailContentMng.createEmailContent(this));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -460,6 +457,10 @@ public class Registration extends BaseModel  implements ServiceConstant{
 	}
 	
 	
+	public boolean isApproved() {
+		return status.equals("Approved");	
+	}
+		
 
 	/*@PostLoad
 	public void tryLoadAttachment(Object obj) {

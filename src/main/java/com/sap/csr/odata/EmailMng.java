@@ -35,45 +35,12 @@ public class EmailMng implements ServiceConstant  {
 	//@Resource(name = "mail/Session")
     private Session mailSession;
 	
-	 private static final Logger LOGGER = LoggerFactory.getLogger(EmailMng.class);
+	 private static final Logger logger = LoggerFactory.getLogger(EmailMng.class);
 	
 	 public EmailMng() {
-		
+		 getSession();
 	}
-	 
-	 
-	private void getLocalSession(String fileName) {
-		String user = "";
-		String password = "";
-		
-		Properties prop = new Properties();
-		
-		try {
-			File file = new File(fileName);
-			FileInputStream fis = new FileInputStream(file);
-			prop.load(fis);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		user = prop.getProperty("mail.user");
-		password = prop.getProperty("mail.password");
-//		System.out.println("user: <" + user + ">  pwd: <" + password + ">"  );
-		
-		final javax.mail.PasswordAuthentication auth = new javax.mail.PasswordAuthentication(user, password);
-		
-		mailSession = Session.getInstance(prop);
-		mailSession = Session.getDefaultInstance(prop, new javax.mail.Authenticator() {
-			protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-				return auth;
-			}
-		});
-
-	}
+	 	
 	private void getSession() {
 		InitialContext ctx;
 		try {
@@ -122,17 +89,19 @@ public class EmailMng implements ServiceConstant  {
 		    	        }
 		    	});
 		    
-		} catch (NamingException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("create mailSession failed", e);
 		}
+	}
+	
+	public boolean sendEmail(EmailContent email) throws Exception {
+		return sendEmail( email.getEmailAddress(), email.getSubject(),email.getBody());
 	}
 	
 	public boolean sendEmail(String to, String subject, String body) throws Exception {
 		Transport transport = null;
         try {
-        	getSession();
-//        	getLocalSession();
         	
             // Construct message from parameters
             MimeMessage mimeMessage = new MimeMessage(mailSession);
@@ -159,15 +128,15 @@ public class EmailMng implements ServiceConstant  {
             return true;
          
         } catch (Exception e) {
-            LOGGER.error("Mail operation failed", e);
-            throw new Exception(e);
+            logger.error("Mail operation failed", e);
+            throw e;
         } finally {
             // Close transport layer
             if (transport != null) {
                 try {
                     transport.close();
                 } catch (MessagingException e) {
-                    throw new Exception(e);
+                    throw e;
                 }
             }
         }
