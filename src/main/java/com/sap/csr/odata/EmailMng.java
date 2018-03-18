@@ -4,13 +4,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.PasswordAuthentication;
+
 import java.util.Formatter;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.Resource;
+import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -19,6 +20,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.PasswordAuthentication;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletException;
@@ -34,10 +36,11 @@ import com.sap.core.connectivity.api.configuration.DestinationConfiguration;
 public class EmailMng implements ServiceConstant  {
 	//@Resource(name = "mail/Session")
     private Session mailSession;
+    private InternetAddress  fromAddress;
+    
+	private static final Logger logger = LoggerFactory.getLogger(EmailMng.class);
 	
-	 private static final Logger logger = LoggerFactory.getLogger(EmailMng.class);
-	
-	 public EmailMng() {
+	public EmailMng() {
 		 getSession();
 	}
 	 	
@@ -47,7 +50,6 @@ public class EmailMng implements ServiceConstant  {
 			ctx = new InitialContext();
 			ConnectivityConfiguration configuration = (ConnectivityConfiguration) ctx.lookup("java:comp/env/connectivityConfiguration");
 
-		    // get destination configuration for "myDestinationName", old name Session
 		    DestinationConfiguration mailConfig = configuration.getConfiguration("EmailDestination");
 		    Map<String, String> map = mailConfig.getAllProperties();
 		    Properties  prop = new Properties();
@@ -61,25 +63,29 @@ public class EmailMng implements ServiceConstant  {
 		    	}
 		    	
 		    	String val = map.get(key);
+		    	logger.error("^^mail prop:" + key + "| val=" + val);
 		    	//As now mail destination can't use the upper case letter, so get the low case here		    	
 		    	if (key.equals("mail.smtp.socketfactory.port")) {
 		    		smtpPort = Integer.parseInt(val);
 		    		continue;
+		    	} else if  ( key.equals("mail.user")) {
+		    		fromAddress = new InternetAddress(val);
+		    		user = val;
+		    		continue;
+		    	} else if (key.equals("mail.password")) {
+		    		password = val;
+		    		continue;
 		    	}
 		    	
 		    	prop.put(key, val);
-		    	if ( key.equals("mail.user"))
-		    		user = val;
-		    	else if (key.equals("mail.password")) {
-		    		password = val;
-		    	}
+		    	
 		    }
 		    //As now destination can't add the upper case letter, so set it here
 		    //??test sap mail, old "465"
 		    prop.put("mail.smtp.socketFactory.port", smtpPort);
 		    prop.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-		    		
-		    final javax.mail.PasswordAuthentication auth =  new javax.mail.PasswordAuthentication(
+		    
+		    final PasswordAuthentication auth = new javax.mail.PasswordAuthentication(
 	                user, password);
 		    
 		    mailSession = Session.getDefaultInstance(prop, 
@@ -88,6 +94,7 @@ public class EmailMng implements ServiceConstant  {
 		    	            return auth;
 		    	        }
 		    	});
+//		    mailSession.setDebug(true);
 		    
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -100,6 +107,23 @@ public class EmailMng implements ServiceConstant  {
 	}
 	
 	public boolean sendEmail(String to, String subject, String body) throws Exception {
+		try {
+			Message message = new MimeMessage(mailSession);
+			message.setFrom(fromAddress ); 
+			message.setRecipients(Message.RecipientType.TO,
+					InternetAddress.parse( to));
+			message.setSubject(subject);
+			message.setText(body); 
+		
+			Transport.send(message);
+			return true;
+		} catch (Exception e) {
+			logger.error("^^throw exception for "+ to + " :", e);
+			throw e;
+		}
+	}
+	
+	public boolean sendEmail_old(String to, String subject, String body) throws Exception {
 		Transport transport = null;
         try {
         	

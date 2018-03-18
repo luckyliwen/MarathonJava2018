@@ -34,6 +34,8 @@ import javax.persistence.Table;
 
 import org.eclipse.persistence.annotations.Multitenant;
 import org.eclipse.persistence.annotations.TenantDiscriminatorColumn;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.sap.csr.odata.EmailContentMng;
 import com.sap.csr.odata.EmailMng;
@@ -51,7 +53,7 @@ import com.sap.csr.odata.Util;
 })
 
 public class Registration extends BaseModel  implements ServiceConstant{
-
+	static private final Logger logger = LoggerFactory.getLogger(Registration.class);
 //	private static long serialVersionUID = 1L;
 
 	//private long projectId;
@@ -382,7 +384,25 @@ public class Registration extends BaseModel  implements ServiceConstant{
 //	}
 
 	
-	
+	synchronized boolean needEnterWaitingList() {
+		boolean need = false;
+		if ( ! isVip()) {
+			getEntityManager();
+			String str = "Select count(r) from Registration r where (r.status=\"Approved\" or r.status=\"Rejected\" or r.status=\"Submitted\") and r.vip=\"false\"";
+			Query query = em.createQuery(str);
+			Object result = query.getSingleResult();
+			long num = 0;
+			if (result instanceof Long) {
+				num = (Long)result;
+			}
+			
+			query = em.createNamedQuery(PROJECT_BY_MARATHON);
+			Project prj = (Project)query.getSingleResult();
+			long max = prj.getTotalNormalCapacity();
+			need = num >= max;
+		}
+		return need;
+	}
 	
 	
 	synchronized boolean hasEnoughSeat() {
@@ -404,8 +424,21 @@ public class Registration extends BaseModel  implements ServiceConstant{
 	public void setSubmitTime() {
 		//here should ensure it only update once
 		if ( status.equals("Submitted")) {
-			if (submittedTime == null)
+			if (submittedTime == null) {
 				submittedTime = new Date();
+				
+				//only the first time state is Submitted need send email for waiting, as admin can save several time
+				if ( needEnterWaitingList() ) {
+					logger.error(" %%% " + userId + " enter to waiting list");
+					try {
+						EmailSendService.sendEmail( EmailContentMng.createEmailContentForWaiting(this));
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			
 		}
 	}
 	/**

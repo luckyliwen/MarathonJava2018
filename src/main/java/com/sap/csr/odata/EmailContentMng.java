@@ -17,12 +17,18 @@ public class EmailContentMng {
 	}
 
 	public static EmailContent  createEmailContentForWaiting(Registration reg) {
-		return null;
+		StringBuilder sb = new StringBuilder(100 + s_waitingSubject.length());
+		sb.append("Dear ");
+		sb.append( reg.getFullName());
+		sb.append(s_waitingBodyMain);
+		
+		return new EmailContent(reg.getEmail(), s_waitingSubject, sb.toString());
 	}
 	
 
 	private static final String s_rejectSubject = "Your 2018 Marathon registration has been rejected";
 	private static final String s_approveSubject = "Your 2018 Marathon registration has been approved";
+	private static final String s_waitingSubject = "Your 2018 Marathon registration has been put on the waitig list";			
 	
 	private static final String createBody(Registration reg) {
 		StringBuilder sb = new StringBuilder(100 + s_approveBodyMain.length());
@@ -34,6 +40,17 @@ public class EmailContentMng {
 			sb.append(s_rejectBodyMain);
 		return sb.toString();
 	}
+	
+	private static final String s_waitingBodyMain = 
+			",\r\n\r\n" +
+			"Thanks for your interest in the TEAM SAP event!\r\n" +
+			"\r\n" +
+			"We are sorry to inform you that the 2018 Great Wall Marathon registration is full. We will put you on the waiting list. If there is a withdrawal and your name is moved to the participant list, you will receive an email notification..\r\n" +
+			"\r\n" +
+			"Again, thanks for your interest and patience. " + 
+			"\r\n" + 
+			"Regards,\r\n" +
+			"TEAM SAP Committee";
 	
 	private static final String s_approveBodyMain = 
 		",\r\n\r\n" +
