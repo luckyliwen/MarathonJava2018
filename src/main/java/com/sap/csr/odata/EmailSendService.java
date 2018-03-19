@@ -16,7 +16,8 @@ public class EmailSendService implements Runnable  {
 	}
 
 	public void run() {
-		EmailMng  emailMng = new EmailMng();
+//		EmailMng  emailMng = new EmailMng();
+		SAPEmailMng emailMng = new SAPEmailMng();
 		EmailContent email = null;
 		while (true) {
 //			logger.debug("!!!! waiting sendig email task");

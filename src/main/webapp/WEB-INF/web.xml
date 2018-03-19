@@ -25,6 +25,11 @@
 		<res-type>com.sap.core.connectivity.api.configuration.ConnectivityConfiguration</res-type>
 	</resource-ref>
 	
+	<resource-ref>
+    	<res-ref-name>mail/SAPInternalNWCloudSession</res-ref-name>
+    	<res-type>javax.mail.Session</res-type>
+  	</resource-ref> 
+	
 
 	<!-- ============================================================== -->
 	<!-- Welcome file list -->
