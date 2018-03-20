@@ -18,20 +18,22 @@ public class SAPEmailMng {
 	private static final Logger logger = LoggerFactory.getLogger(SAPEmailMng.class);
 	
 	private void getSession()  {
-    	try {
-	    	InitialContext ctx = new InitialContext();
-	    	mailSession = (Session)ctx.lookup("java:comp/env/mail/SAPInternalNWCloudSession");
-//	    	mailSession.setDebug(true);
-	    	
-	    	//now use this provided by hr
-	    	fromAddress = new InternetAddress("chinacommunications@global.corp.sap");
-	    	
-	    	System.out.println("create mail session ok " + mailSession.toString());
-	    	
-    	} catch (Exception e) {
-    		System.out.println("SAPEmailMng create mail session error"+ e);
-    		e.printStackTrace();
-    	}
+		if (mailSession == null) {
+	    	try {
+		    	InitialContext ctx = new InitialContext();
+		    	mailSession = (Session)ctx.lookup("java:comp/env/mail/SAPInternalNWCloudSession");
+	//	    	mailSession.setDebug(true);
+		    	
+		    	//now use this provided by hr
+		    	fromAddress = new InternetAddress("chinacommunications@global.corp.sap");
+		    	
+		    	System.out.println("create mail session ok " + mailSession.toString());
+		    	
+	    	} catch (Exception e) {
+	    		System.out.println("SAPEmailMng create mail session error"+ e);
+	    		e.printStackTrace();
+	    	}
+		}
     }
 	
 	public boolean sendEmail(EmailContent email) throws Exception {

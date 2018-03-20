@@ -112,7 +112,7 @@ public class Registration extends BaseModel  implements ServiceConstant{
 	private String rejectReason;
 	private String cancelReason;
 			
-	private boolean vip;
+	private boolean vip,  inWaitingList=false;
 	//@OneToMany(mappedBy = "registration",  cascade=CascadeType.ALL )
 	
 //	@OneToMany(mappedBy = "registration")
@@ -124,6 +124,16 @@ public class Registration extends BaseModel  implements ServiceConstant{
 	//private List<Donation>  donation = new ArrayList<Donation>();
 	
 	
+	public boolean isInWaitingList() {
+		return inWaitingList;
+	}
+
+
+	public void setInWaitingList(boolean inWaitingList) {
+		this.inWaitingList = inWaitingList;
+	}
+
+
 	public Registration() {
 		super();
 	}
@@ -429,9 +439,12 @@ public class Registration extends BaseModel  implements ServiceConstant{
 				
 				//only the first time state is Submitted need send email for waiting, as admin can save several time
 				if ( needEnterWaitingList() ) {
+					
+					setInWaitingList(true);
+					
 					logger.error(" %%% " + userId + " enter to waiting list");
 					try {
-						EmailSendService.sendEmail( EmailContentMng.createEmailContentForWaiting(this));
+						EmailSendService.sendEmail( EmailContentMng.createEmailContentForWaiting(this, true));
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -441,6 +454,14 @@ public class Registration extends BaseModel  implements ServiceConstant{
 			
 		}
 	}
+	
+	//!!Previous forget to add the PerPersist, so some directly submit don't have submit time
+	@PrePersist
+	public void onPrePersit() {
+		modifiedTime = new Date();
+		setSubmitTime();
+	}
+	
 	/**
 	 * @return the modifiedTime
 	 * @throws Exception 
@@ -479,6 +500,15 @@ public class Registration extends BaseModel  implements ServiceConstant{
 			
 			try {
 				EmailSendService.sendEmail( EmailContentMng.createEmailContent(this));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else if ( updateFlag.equals("Waiting")) {
+			logger.debug("Put in waiting list for " + getUserId());
+			try {
+				setInWaitingList(true);
+				EmailSendService.sendEmail( EmailContentMng.createEmailContentForWaiting(this, false));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

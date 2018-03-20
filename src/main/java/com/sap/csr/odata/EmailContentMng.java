@@ -16,19 +16,34 @@ public class EmailContentMng {
 		return new EmailContent(reg.getEmail(), subject, body);
 	}
 
-	public static EmailContent  createEmailContentForWaiting(Registration reg) {
-		StringBuilder sb = new StringBuilder(100 + s_waitingSubject.length());
-		sb.append("Dear ");
-		sb.append( reg.getFullName());
-		sb.append(s_waitingBodyMain);
-		
-		return new EmailContent(reg.getEmail(), s_waitingSubject, sb.toString());
+	public static EmailContent  createEmailContentForWaiting(Registration reg, boolean toAdmin) {
+		if ( ! toAdmin) {
+			StringBuilder sb = new StringBuilder(100 + s_waitingSubject.length());
+			sb.append("Dear ");
+			sb.append( reg.getFullName());
+			sb.append(s_waitingBodyMain);
+			
+			return new EmailContent(reg.getEmail(), s_waitingSubject, sb.toString());
+		} else {
+			//now changed to send mail to administrator
+			//Waiting
+			String to = "ying.yang04@sap.com,yanjun.zhang@sap.com";
+			StringBuilder sb = new StringBuilder(100);
+			sb.append("Dear Administrator,\r\n\r\n");
+			sb.append("Now marathon registration has exceed the threshold, please considerate whether need choose any action or not.\r\n\r\n");
+			sb.append("new submitted information:\r\n");
+			sb.append("User ID: " + reg.getUserId());
+			sb.append("\r\nEmail: " + reg.getEmail());
+			
+			return new EmailContent(to,  s_waitingToAdmin, sb.toString());
+		}
 	}
 	
 
 	private static final String s_rejectSubject = "Your 2018 Marathon registration has been rejected";
 	private static final String s_approveSubject = "Your 2018 Marathon registration has been approved";
-	private static final String s_waitingSubject = "Your 2018 Marathon registration has been put on the waitig list";			
+	private static final String s_waitingSubject = "Your 2018 Marathon registration has been put on the waitig list";
+	private static final String s_waitingToAdmin = "Now 2018 marathon registration has been exceed the threshold";
 	
 	private static final String createBody(Registration reg) {
 		StringBuilder sb = new StringBuilder(100 + s_approveBodyMain.length());
@@ -48,7 +63,8 @@ public class EmailContentMng {
 			"We are sorry to inform you that the 2018 Great Wall Marathon registration is full. We will put you on the waiting list." +
 			"If there is a withdrawal and your name is moved to the participant list, you will receive an email notification." + 
 			"\r\n" +
-			"Again, thanks for your interest and patience. " + 
+			"Again, thanks for your interest and patience.\r\n\r\n " + 
+			"This mailbox is not monitored. If there are any queries, please contact ying.yang04@sap.com or yanjun.zhang@sap.com.\r\n" + 
 			"\r\n\r\n" + 
 			"Regards,\r\n" +
 			"TEAM SAP Committee";
@@ -64,6 +80,7 @@ public class EmailContentMng {
 		"We will send all runners an official Welcome Email on April 03. Please make sure to read it carefully which contains every useful information you need to know.\r\n" + 
 		"Here is the 2018 Great Wall Marathon official website for your reference: https://great-wall-marathon.com\r\n" +
 		"Again, thanks for being part of TEAM SAP to Run The Wall!\r\n" +
+		"This mailbox is not monitored. If there are any queries, please contact ying.yang04@sap.com or yanjun.zhang@sap.com.\r\n" +
 		"\r\n" + 
 		"Regards,\r\n" +
 		"TEAM SAP Committee";
@@ -75,6 +92,7 @@ public class EmailContentMng {
 		"We are sorry to inform you that your 2018 Great Wall Marathon registration has been rejected due to incomplete information.\r\n" +
 		"Please double check https://flpnwc-f57f4b412.dispatcher.cn1.hana.ondemand.com/sites?siteId=290d1ba1-af08-43ad-a7b7-b8bd5a05cec6#marathon-registration and resubmit again. \r\n" +
 		"If you have any questions, please feel free to contact Ms. Yang Ying @ ying.yang04@sap.com, or Ms. Bela Zhang @ yanjun.zhang@sap.com\r\n" +
+		"This mailbox is not monitored. If there are any queries, please contact ying.yang04@sap.com or yanjun.zhang@sap.com.\r\n" +
 		"\r\n" +
 		"Regards,\r\n" +
 		"TEAM SAP Committee";
@@ -86,7 +104,6 @@ public class EmailContentMng {
 		reg.setStatus("Approved");
 		EmailContent  email = createEmailContent(reg);
 		email.debug();
-		
 		
 		reg.setStatus("rejected");
 		

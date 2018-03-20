@@ -20,12 +20,12 @@ public class EmailSendService implements Runnable  {
 		SAPEmailMng emailMng = new SAPEmailMng();
 		EmailContent email = null;
 		while (true) {
-//			logger.debug("!!!! waiting sendig email task");
+			logger.debug("!!!! waiting sendig email task");
 			try {
 				email = s_blockingQueue.take();
-//				logger.debug("!!Send email " + email.toString() );
+				logger.debug("!!Send email " + email.toString() );
 				emailMng.sendEmail(email);
-//				logger.debug("Finish send email");
+				logger.debug("Finish send email");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				logger.error("Send email failed" + email.toString(), e);
